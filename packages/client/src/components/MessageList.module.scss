@@ -1,0 +1,15 @@
+.container {
+  height: 100%;
+  padding: 1rem;
+  overflow-y: auto;
+  background-color: #ffffff;
+}
+
+.placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #6c757d;
+  font-style: italic;
+}
