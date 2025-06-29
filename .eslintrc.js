@@ -30,5 +30,27 @@ module.exports = {
         jest: true,
       },
     },
+    {
+      files: ['packages/client/**/*.{ts,tsx}'],
+      env: {
+        browser: true,
+        es2020: true,
+      },
+      plugins: ['@typescript-eslint', 'react', 'react-hooks'],
+      rules: {
+        'no-console': 'warn',
+        'react/react-in-jsx-scope': 'off',
+        'react-hooks/rules-of-hooks': 'error',
+        'react-hooks/exhaustive-deps': 'warn',
+        'react/prop-types': 'off',
+        'react/jsx-uses-react': 'off',
+        'react/jsx-uses-vars': 'error',
+      },
+      settings: {
+        react: {
+          version: 'detect',
+        },
+      },
+    },
   ],
 };

@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, type FormEvent, type ChangeEvent } from 'react';
 import styles from './UsernameInput.module.scss';
 
 type UsernameInputProps = {
@@ -10,14 +10,14 @@ type UsernameInputProps = {
 export const UsernameInput = ({ onUsernameSubmit, isDisabled, currentUsername }: UsernameInputProps) => {
   const [inputValue, setInputValue] = useState('');
 
-  const handleSubmit = useCallback((e: React.FormEvent) => {
+  const handleSubmit = useCallback((e: FormEvent) => {
     e.preventDefault();
     if (inputValue.trim()) {
       onUsernameSubmit(inputValue.trim());
     }
   }, [inputValue, onUsernameSubmit]);
 
-  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
     setInputValue(e.target.value);
   }, []);
 

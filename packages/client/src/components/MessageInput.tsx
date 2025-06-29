@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, type FormEvent, type ChangeEvent } from 'react';
 import styles from './MessageInput.module.scss';
 
 type MessageInputProps = {
@@ -8,7 +8,7 @@ type MessageInputProps = {
 export const MessageInput = ({ username }: MessageInputProps) => {
   const [message, setMessage] = useState('');
 
-  const handleSubmit = useCallback((e: React.FormEvent) => {
+  const handleSubmit = useCallback((e: FormEvent) => {
     e.preventDefault();
     if (message.trim()) {
       // TODO: Send message via socket
@@ -17,7 +17,7 @@ export const MessageInput = ({ username }: MessageInputProps) => {
     }
   }, [message, username]);
 
-  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
     setMessage(e.target.value);
   }, []);
 
