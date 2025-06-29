@@ -1,4 +1,4 @@
-import { Message } from '../../../../shared/src/types/Message.types';
+import { Message } from 'shared';
 
 const messages: Message[] = [];
 
