@@ -1,0 +1,16 @@
+node_modules/
+dist/
+build/
+.env
+.env.local
+.DS_Store
+*.log
+coverage/
+.nyc_output/
+.vscode/
+.idea/
+*.tgz
+*.tar.gz
+test-results/
+playwright-report/
+playwright/.cache/
