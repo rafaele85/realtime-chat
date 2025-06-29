@@ -4,9 +4,9 @@
     "outDir": "./dist",
     "rootDir": "./src",
     "lib": ["ES2020"],
-    "types": ["node"]
+    "types": ["node", "jest"]
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "__tests__/**/*"],
   "exclude": ["dist", "node_modules"],
   "ts-node": {
     "esm": true

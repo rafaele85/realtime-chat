@@ -5,8 +5,8 @@ export const setupSocketHandlers = (io: Server) => {
   io.on('connection', (socket) => {
     console.log('User connected:', socket.id);
 
-    socket.on('message:send', (data: { username: string; content: string }) => {
-      const message = messageService.createMessage(data.username, data.content);
+    socket.on('message:send', async (data: { username: string; content: string }) => {
+      const message = await messageService.createMessage(data.username, data.content);
       io.emit('message:receive', message);
     });
 

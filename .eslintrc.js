@@ -23,4 +23,12 @@ module.exports = {
     'array-bracket-spacing': ['error', 'never'],
     'no-unused-vars': 'off',
   },
+  overrides: [
+    {
+      files: ['**/__tests__/**/*.ts', '**/*.test.ts'],
+      env: {
+        jest: true,
+      },
+    },
+  ],
 };
