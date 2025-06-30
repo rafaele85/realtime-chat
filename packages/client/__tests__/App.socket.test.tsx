@@ -5,7 +5,12 @@ import * as socketService from '../src/services/socketService';
 
 // Mock socket object
 const mockSocket = {
-  on: jest.fn(),
+  on: jest.fn((event, callback) => {
+    // Immediately call connect callback to simulate connected state
+    if (event === 'connect') {
+      setTimeout(callback, 0);
+    }
+  }),
   disconnect: jest.fn(),
 };
 
@@ -43,6 +48,11 @@ describe('App socket integration', () => {
     const user = userEvent.setup();
     render(<App />);
     
+    // Wait for loading to complete
+    await waitFor(() => {
+      expect(screen.getByPlaceholderText('Enter your username')).toBeInTheDocument();
+    });
+    
     // Set username first
     await act(async () => {
       await user.type(screen.getByPlaceholderText('Enter your username'), 'testuser');
@@ -76,6 +86,11 @@ describe('App socket integration', () => {
   it('should accumulate multiple received messages', async () => {
     const user = userEvent.setup();
     render(<App />);
+    
+    // Wait for loading to complete
+    await waitFor(() => {
+      expect(screen.getByPlaceholderText('Enter your username')).toBeInTheDocument();
+    });
     
     // Set username first
     await act(async () => {
