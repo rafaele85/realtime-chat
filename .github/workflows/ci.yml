@@ -29,3 +29,6 @@ jobs:
         echo "npm version: $(npm --version)"
         echo "Workspaces found:"
         npm run --workspaces --if-present --silent list
+        
+    - name: TypeScript checks
+      run: npm run typecheck
