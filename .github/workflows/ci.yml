@@ -18,9 +18,14 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: '18'
+        cache: 'npm'
         
     - name: Install dependencies
-      run: npm install
+      run: npm ci
       
-    - name: Basic check
-      run: echo "CI workflow is working!"
+    - name: Verify installation
+      run: |
+        echo "Node.js version: $(node --version)"
+        echo "npm version: $(npm --version)"
+        echo "Workspaces found:"
+        npm run --workspaces --if-present --silent list
