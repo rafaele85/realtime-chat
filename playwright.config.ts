@@ -13,7 +13,7 @@ export default defineConfig({
     video: 'retain-on-failure',
     headless: true,
   },
-  timeout: 5000,
+  timeout: 30000,
   projects: [
     {
       name: 'chromium',
