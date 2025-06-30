@@ -1,0 +1,131 @@
+@keyframes bounceInRight {
+  from,
+  60%,
+  75%,
+  90%,
+  to {
+    animation-timing-function: cubic-bezier(.215, .61, .355, 1);
+  }
+
+  from {
+    opacity: 0;
+    transform: translate3d(300px, 0, 0);
+  }
+
+  60% {
+    opacity: 1;
+    transform: translate3d(-15px, 0, 0);
+  }
+
+  75% {
+    transform: translate3d(5px, 0, 0);
+  }
+
+  90% {
+    transform: translate3d(-2px, 0, 0);
+  }
+
+  to {
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes bounceInLeft {
+  from,
+  60%,
+  75%,
+  90%,
+  to {
+    animation-timing-function: cubic-bezier(.215, .61, .355, 1);
+  }
+
+  from {
+    opacity: 0;
+    transform: translate3d(-300px, 0, 0);
+  }
+
+  60% {
+    opacity: 1;
+    transform: translate3d(15px, 0, 0);
+  }
+
+  75% {
+    transform: translate3d(-5px, 0, 0);
+  }
+
+  90% {
+    transform: translate3d(2px, 0, 0);
+  }
+
+  to {
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+.message {
+  max-width: 70%;
+  margin-bottom: 1rem;
+  padding: 0.75rem;
+  border-radius: 18px;
+  word-wrap: break-word;
+  position: relative;
+}
+
+.currentUser {
+  background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+  color: white;
+  align-self: flex-end;
+  margin-left: auto;
+  border-bottom-right-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3);
+}
+
+.otherUser {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  color: #333;
+  align-self: flex-start;
+  margin-right: auto;
+  border-bottom-left-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: 1px solid #dee2e6;
+}
+
+.bounceIn.currentUser {
+  animation: bounceInRight 0.3s ease-out;
+}
+
+.bounceIn.otherUser {
+  animation: bounceInLeft 0.3s ease-out;
+}
+
+.messageHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.username {
+  font-weight: 600;
+}
+
+.currentUser .username {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.otherUser .username {
+  color: #495057;
+}
+
+.timestamp {
+  font-size: 0.75rem;
+  opacity: 0.7;
+  font-weight: normal;
+}
+
+.messageContent {
+  font-size: 0.95rem;
+  line-height: 1.4;
+  word-break: break-word;
+}

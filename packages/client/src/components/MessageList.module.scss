@@ -2,7 +2,10 @@
   height: 100%;
   padding: 1rem;
   overflow-y: auto;
-  background-color: #ffffff;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 
 .placeholder {
@@ -12,21 +15,6 @@
   height: 100%;
   color: #6c757d;
   font-style: italic;
-}
-
-.message {
-  margin-bottom: 0.75rem;
-  padding: 0.5rem;
-  border-radius: 4px;
-  background-color: #f8f9fa;
-}
-
-.username {
-  font-weight: 600;
-  color: #007bff;
-  margin-right: 0.5rem;
-}
-
-.content {
-  color: #333;
+  text-align: center;
+  padding: 2rem;
 }

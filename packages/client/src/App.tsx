@@ -47,7 +47,7 @@ export const App = () => {
       </div>
       
       <div className={styles.messages}>
-        <MessageList messages={messages} />
+        <MessageList messages={messages} currentUsername={username} />
       </div>
       
       {username.length > 0 && (
