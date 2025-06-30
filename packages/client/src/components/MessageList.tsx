@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { Message } from 'shared';
 import { MessageListItem } from './MessageListItem';
 import styles from './MessageList.module.scss';
@@ -9,6 +10,23 @@ type MessageListProps = {
 
 export const MessageList = ({ messages, currentUsername }: MessageListProps) => {
   console.log('📋 MessageList rendered with messages:', messages);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const scrollToBottom = () => {
+    if (messagesEndRef.current && typeof messagesEndRef.current.scrollIntoView === 'function') {
+      messagesEndRef.current.scrollIntoView({ 
+        behavior: 'smooth',
+        block: 'end' 
+      });
+    }
+  };
+
+  useEffect(() => {
+    if (messages.length > 0) {
+      scrollToBottom();
+    }
+  }, [messages]);
+
   if (messages.length === 0) {
     return (
       <div className={styles.container}>
@@ -34,6 +52,7 @@ export const MessageList = ({ messages, currentUsername }: MessageListProps) => 
           />
         );
       })}
+      <div ref={messagesEndRef} />
     </div>
   );
 };

@@ -2,7 +2,15 @@ import { render, screen } from '@testing-library/react';
 import { MessageList } from '../src/components/MessageList';
 import { Message } from 'shared';
 
+// Mock scrollIntoView
+const mockScrollIntoView = jest.fn();
+Element.prototype.scrollIntoView = mockScrollIntoView;
+
 describe('MessageList integration', () => {
+  beforeEach(() => {
+    mockScrollIntoView.mockClear();
+  });
+
   const mockMessages: Message[] = [
     {
       id: '1',
