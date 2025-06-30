@@ -8,6 +8,12 @@ test.describe('Message Validation', () => {
   });
 
   test('should not send empty message', async ({ page }) => {
+    // Use unique username to avoid interference
+    const uniqueUser = `emptyuser${Date.now()}`;
+    await page.goto('http://localhost:3000');
+    await page.getByPlaceholder('Enter your username').fill(uniqueUser);
+    await page.getByText('Join Chat').click();
+    
     // Try to send empty message by clicking Send button
     await page.getByRole('button', { name: 'Send' }).click();
     
@@ -15,11 +21,17 @@ test.describe('Message Validation', () => {
     await page.getByPlaceholder('Type your message...').press('Enter');
     
     // Verify no message from this user exists
-    const userMessages = page.getByTestId('message-item').filter({ hasText: 'testuser' });
+    const userMessages = page.getByTestId('message-item').filter({ hasText: uniqueUser });
     await expect(userMessages).toHaveCount(0);
   });
 
   test('should not send whitespace-only message', async ({ page }) => {
+    // Use unique username to avoid interference
+    const uniqueUser = `whitespaceuser${Date.now()}`;
+    await page.goto('http://localhost:3000');
+    await page.getByPlaceholder('Enter your username').fill(uniqueUser);
+    await page.getByText('Join Chat').click();
+    
     const messageInput = page.getByPlaceholder('Type your message...');
     await messageInput.fill('   \t  \n  ');
     await page.getByRole('button', { name: 'Send' }).click();
@@ -28,7 +40,7 @@ test.describe('Message Validation', () => {
     await expect(messageInput).toHaveValue('');
     
     // Verify no message exists
-    const userMessages = page.getByTestId('message-item').filter({ hasText: 'testuser' });
+    const userMessages = page.getByTestId('message-item').filter({ hasText: uniqueUser });
     await expect(userMessages).toHaveCount(0);
   });
 

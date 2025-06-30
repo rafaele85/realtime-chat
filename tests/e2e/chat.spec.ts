@@ -16,7 +16,7 @@ test.describe('Chat Application - Integration', () => {
     // Verify transition to messaging interface
     await expect(page.getByText('Username: integrationuser')).toBeVisible();
     await expect(page.getByPlaceholder('Type your message...')).toBeVisible();
-    await expect(page.getByText('Send')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Send' })).toBeVisible();
     
     // Send a message and verify it appears
     const uniqueMessage = `Integration test ${Date.now()}`;
