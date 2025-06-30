@@ -36,6 +36,21 @@ jobs:
     - name: TypeScript checks
       run: npm run typecheck
       
+    - name: ESLint checks
+      run: npm run lint
+      
+    - name: Jest unit tests
+      run: npm run test
+      
+    - name: Build client for testing
+      run: npm run build --workspace=client
+      
+    - name: Install Playwright browsers
+      run: npx playwright install --with-deps
+      
+    - name: Playwright E2E tests
+      run: npm run test:e2e
+      
   deploy:
     runs-on: ubuntu-latest
     needs: test
