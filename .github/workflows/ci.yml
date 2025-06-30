@@ -30,5 +30,8 @@ jobs:
         echo "Workspaces found:"
         npm run --workspaces --if-present --silent list
         
+    - name: Build shared package
+      run: npm run build --workspace=shared
+      
     - name: TypeScript checks
       run: npm run typecheck
