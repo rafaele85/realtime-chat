@@ -24,7 +24,7 @@ describe('App with ErrorBoundary integration', () => {
     render(
       <ErrorBoundary>
         <ThrowingComponent />
-      </ErrorBoundary>
+      </ErrorBoundary>,
     );
 
     expect(screen.getByText('Something went wrong')).toBeInTheDocument();
@@ -35,7 +35,7 @@ describe('App with ErrorBoundary integration', () => {
     render(
       <ErrorBoundary>
         <WorkingComponent />
-      </ErrorBoundary>
+      </ErrorBoundary>,
     );
 
     expect(screen.getByText('Component works fine')).toBeInTheDocument();

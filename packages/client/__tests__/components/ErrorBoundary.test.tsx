@@ -24,7 +24,7 @@ describe('ErrorBoundary', () => {
     render(
       <ErrorBoundary>
         <ThrowError shouldThrow={false} />
-      </ErrorBoundary>
+      </ErrorBoundary>,
     );
 
     expect(screen.getByText('No error')).toBeInTheDocument();
@@ -34,7 +34,7 @@ describe('ErrorBoundary', () => {
     render(
       <ErrorBoundary>
         <ThrowError shouldThrow={true} />
-      </ErrorBoundary>
+      </ErrorBoundary>,
     );
 
     expect(screen.getByText('Something went wrong')).toBeInTheDocument();
@@ -45,7 +45,7 @@ describe('ErrorBoundary', () => {
     render(
       <ErrorBoundary fallback={<div>Custom error message</div>}>
         <ThrowError shouldThrow={true} />
-      </ErrorBoundary>
+      </ErrorBoundary>,
     );
 
     expect(screen.getByText('Custom error message')).toBeInTheDocument();
@@ -57,7 +57,7 @@ describe('ErrorBoundary', () => {
     render(
       <ErrorBoundary>
         <ThrowError shouldThrow={true} />
-      </ErrorBoundary>
+      </ErrorBoundary>,
     );
 
     expect(consoleSpy).toHaveBeenCalledWith('ErrorBoundary caught an error:', expect.any(Error));

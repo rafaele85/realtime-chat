@@ -16,7 +16,7 @@ export const MessageList = ({ messages, currentUsername }: MessageListProps) => 
     if (messagesEndRef.current && typeof messagesEndRef.current.scrollIntoView === 'function') {
       messagesEndRef.current.scrollIntoView({ 
         behavior: 'smooth',
-        block: 'end' 
+        block: 'end', 
       });
     }
   };

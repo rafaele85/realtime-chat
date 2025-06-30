@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render } from '@testing-library/react';
 import { MessageList } from '../../src/components/MessageList';
 import { Message } from 'shared';
 
@@ -28,7 +28,7 @@ describe('MessageList', () => {
 
   it('should auto-scroll to latest message when new message is added', () => {
     const { rerender } = render(
-      <MessageList messages={mockMessages} currentUsername="user1" />
+      <MessageList messages={mockMessages} currentUsername="user1" />,
     );
 
     // Add a new message
@@ -40,7 +40,7 @@ describe('MessageList', () => {
     };
 
     rerender(
-      <MessageList messages={[...mockMessages, newMessage]} currentUsername="user1" />
+      <MessageList messages={[...mockMessages, newMessage]} currentUsername="user1" />,
     );
 
     // Should scroll to the latest message

@@ -63,7 +63,11 @@ describe('App socket integration', () => {
     });
     
     // Get the message handler function passed to socket.on
-    const messageHandler = mockSocket.on.mock.calls.find(call => call[0] === 'message')[1];
+    const messageCall = mockSocket.on.mock.calls.find(call => call[0] === 'message');
+    if (!messageCall) {
+      throw new Error('Message handler not found');
+    }
+    const messageHandler = messageCall[1];
     
     // Simulate receiving a message
     const testMessage = {
@@ -101,7 +105,11 @@ describe('App socket integration', () => {
       await user.click(screen.getByText('Join Chat'));
     });
     
-    const messageHandler = mockSocket.on.mock.calls.find(call => call[0] === 'message')[1];
+    const messageCall = mockSocket.on.mock.calls.find(call => call[0] === 'message');
+    if (!messageCall) {
+      throw new Error('Message handler not found');
+    }
+    const messageHandler = messageCall[1];
     
     // Simulate receiving multiple messages
     act(() => {
