@@ -45,9 +45,6 @@ jobs:
     - name: Jest unit tests
       run: npm run test
       
-    - name: Install Playwright browsers
-      run: npx playwright install --with-deps
-      
     - name: Check if server was already built
       run: |
         echo "Checking if server build from earlier step still exists:"
@@ -70,7 +67,8 @@ jobs:
         echo "=== BUILDING SERVER ==="
         cd packages/server
         echo "In server directory: $(pwd)"
-        npx tsc --verbose
+        echo "Running TypeScript compilation..."
+        npx tsc --listFiles
         
         echo "=== AFTER BUILD ==="
         echo "Contents of server directory:"
@@ -94,6 +92,9 @@ jobs:
         echo "Waiting for server to start on port 3001..."
         timeout 30 bash -c 'until curl -f http://localhost:3001/health 2>/dev/null || nc -z localhost 3001; do sleep 1; done' || echo "Server didn't start within 30 seconds"
         sleep 2  # Additional buffer
+      
+    - name: Install Playwright browsers
+      run: npx playwright install --with-deps
       
     - name: Playwright E2E tests
       id: e2e-tests
