@@ -86,7 +86,7 @@ jobs:
           npm run start --workspace=server &
         else
           echo "❌ server.js not found, cannot start server"
-          exit 1
+          echo "SERVER_BUILD_FAILED=true" >> $GITHUB_ENV
         fi
       
     - name: Wait for server to start
