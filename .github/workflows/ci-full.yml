@@ -49,10 +49,18 @@ jobs:
       run: npx playwright install --with-deps
       
     - name: Start server for E2E tests
-      run: npm run start --workspace=server &
+      run: |
+        # Verify server build exists and start server
+        ls -la packages/server/dist/ || echo "No dist directory"
+        npm run build --workspace=server
+        ls -la packages/server/dist/
+        npm run start --workspace=server &
       
     - name: Wait for server to start
-      run: sleep 5
+      run: |
+        echo "Waiting for server to start on port 3001..."
+        timeout 30 bash -c 'until curl -f http://localhost:3001/health 2>/dev/null || nc -z localhost 3001; do sleep 1; done' || echo "Server didn't start within 30 seconds"
+        sleep 2  # Additional buffer
       
     - name: Playwright E2E tests
       id: e2e-tests
