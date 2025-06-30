@@ -10,7 +10,7 @@ export default defineConfig({
   reporter: process.env.CI ? [['list']] : [['list'], ['html', { open: 'never' }]],
   use: {
     baseURL: 'http://localhost:3000',
-    trace: 'on-failure-retry',
+    trace: 'retain-on-failure',
     video: 'retain-on-failure',
     screenshot: 'only-on-failure',
     headless: true,
