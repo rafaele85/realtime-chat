@@ -3,7 +3,9 @@ import { io, Socket } from 'socket.io-client';
 let socket: Socket | null = null;
 
 export const connect = () => {
-  if (socket?.connected) return;
+  if (socket?.connected) {
+    return socket;
+  }
 
   socket = io('http://localhost:3001', {
     transports: ['websocket'],
@@ -16,6 +18,8 @@ export const connect = () => {
   socket.on('disconnect', () => {
     console.log('Disconnected from server');
   });
+
+  return socket;
 };
 
 export const disconnect = () => {

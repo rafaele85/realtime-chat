@@ -22,10 +22,11 @@ module.exports = {
     'object-curly-spacing': ['error', 'always'],
     'array-bracket-spacing': ['error', 'never'],
     'no-unused-vars': 'off',
+    'curly': ['error', 'all'],
   },
   overrides: [
     {
-      files: ['**/__tests__/**/*.ts', '**/*.test.ts'],
+      files: ['**/__tests__/**/*.{ts,tsx}', '**/*.test.{ts,tsx}'],
       env: {
         jest: true,
       },
@@ -45,6 +46,7 @@ module.exports = {
         'react/prop-types': 'off',
         'react/jsx-uses-react': 'off',
         'react/jsx-uses-vars': 'error',
+        'curly': ['error', 'all'],
       },
       settings: {
         react: {

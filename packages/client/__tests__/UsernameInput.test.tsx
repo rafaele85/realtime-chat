@@ -15,7 +15,7 @@ describe('UsernameInput', () => {
         onUsernameSubmit={mockOnUsernameSubmit}
         isDisabled={false}
         currentUsername=""
-      />
+      />,
     );
     
     expect(screen.getByPlaceholderText('Enter your username')).toBeInTheDocument();
@@ -28,7 +28,7 @@ describe('UsernameInput', () => {
         onUsernameSubmit={mockOnUsernameSubmit}
         isDisabled={true}
         currentUsername="testuser"
-      />
+      />,
     );
     
     expect(screen.getByText('Username: testuser')).toBeInTheDocument();
@@ -42,7 +42,7 @@ describe('UsernameInput', () => {
         onUsernameSubmit={mockOnUsernameSubmit}
         isDisabled={false}
         currentUsername=""
-      />
+      />,
     );
     
     const input = screen.getByPlaceholderText('Enter your username');
@@ -61,7 +61,7 @@ describe('UsernameInput', () => {
         onUsernameSubmit={mockOnUsernameSubmit}
         isDisabled={false}
         currentUsername=""
-      />
+      />,
     );
     
     const button = screen.getByText('Join Chat');

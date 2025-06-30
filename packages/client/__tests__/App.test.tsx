@@ -1,8 +1,28 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { App } from '../src/App';
+import * as socketService from '../src/services/socketService';
+
+// Mock socket object
+const mockSocket = {
+  on: jest.fn(),
+  disconnect: jest.fn(),
+};
+
+// Mock the socket service
+jest.mock('../src/services/socketService', () => ({
+  connect: jest.fn(),
+  disconnect: jest.fn(),
+}));
 
 describe('App', () => {
+  const mockConnect = socketService.connect as jest.Mock;
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockConnect.mockReturnValue(mockSocket);
+  });
+
   it('should render username input initially', () => {
     render(<App />);
     
