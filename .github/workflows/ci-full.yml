@@ -56,19 +56,38 @@ jobs:
         
     - name: Start server for E2E tests  
       run: |
-        # Check if we need to rebuild or if earlier build is still valid
-        if [ ! -f "packages/server/dist/server.js" ]; then
-          echo "Server not built, building now..."
-          npm run build --workspace=server
+        echo "=== DEBUGGING SERVER BUILD ==="
+        echo "Current working directory: $(pwd)"
+        echo "Server package.json exists:" 
+        cat packages/server/package.json | grep -A5 -B5 '"build"'
+        
+        echo "Server tsconfig.json:"
+        cat packages/server/tsconfig.json
+        
+        echo "Server source files:"
+        find packages/server/src -name "*.ts" | head -10
+        
+        echo "=== BUILDING SERVER ==="
+        cd packages/server
+        echo "In server directory: $(pwd)"
+        npx tsc --verbose
+        
+        echo "=== AFTER BUILD ==="
+        echo "Contents of server directory:"
+        ls -la
+        echo "Contents of dist directory:"
+        ls -la dist/ || echo "No dist directory"
+        
+        cd ../..
+        echo "Back to root: $(pwd)"
+        
+        if [ -f "packages/server/dist/server.js" ]; then
+          echo "✅ server.js found, starting server..."
+          npm run start --workspace=server &
         else
-          echo "Server already built, using existing build"
+          echo "❌ server.js not found, cannot start server"
+          exit 1
         fi
-        
-        echo "Final check - dist contents:"
-        ls -la packages/server/dist/
-        
-        echo "Starting server..."
-        npm run start --workspace=server &
       
     - name: Wait for server to start
       run: |
