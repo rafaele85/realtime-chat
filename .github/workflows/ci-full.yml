@@ -55,17 +55,25 @@ jobs:
       run: sleep 5
       
     - name: Playwright E2E tests
+      id: e2e-tests
+      continue-on-error: true  # Don't fail the job if E2E tests fail
       run: npm run test:e2e
       
     - name: Upload test results and videos
       if: always()  # Always upload, even if tests fail
       uses: actions/upload-artifact@v4
       with:
-        name: playwright-results
+        name: playwright-results-${{ github.run_id }}
         path: |
           test-results/
           playwright-report/
         retention-days: 30
+        
+    - name: Check E2E test results
+      if: steps.e2e-tests.outcome == 'failure'
+      run: |
+        echo "::warning::E2E tests failed but artifacts were uploaded"
+        exit 1  # Still fail the job, but after uploading artifacts
       
   deploy:
     runs-on: ubuntu-latest
