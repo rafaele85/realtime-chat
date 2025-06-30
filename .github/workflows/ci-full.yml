@@ -48,12 +48,26 @@ jobs:
     - name: Install Playwright browsers
       run: npx playwright install --with-deps
       
-    - name: Start server for E2E tests
+    - name: Check if server was already built
       run: |
-        # Verify server build exists and start server
-        ls -la packages/server/dist/ || echo "No dist directory"
-        npm run build --workspace=server
+        echo "Checking if server build from earlier step still exists:"
+        ls -la packages/server/ || echo "No server directory"
+        ls -la packages/server/dist/ || echo "No dist directory from earlier build"
+        
+    - name: Start server for E2E tests  
+      run: |
+        # Check if we need to rebuild or if earlier build is still valid
+        if [ ! -f "packages/server/dist/server.js" ]; then
+          echo "Server not built, building now..."
+          npm run build --workspace=server
+        else
+          echo "Server already built, using existing build"
+        fi
+        
+        echo "Final check - dist contents:"
         ls -la packages/server/dist/
+        
+        echo "Starting server..."
         npm run start --workspace=server &
       
     - name: Wait for server to start
