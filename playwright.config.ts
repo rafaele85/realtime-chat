@@ -2,6 +2,7 @@ import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
   testDir: './tests/e2e',
+  outputDir: './test-results',
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: 0,  // Never retry tests
@@ -9,8 +10,9 @@ export default defineConfig({
   reporter: process.env.CI ? [['list']] : [['list'], ['html', { open: 'never' }]],
   use: {
     baseURL: 'http://localhost:3000',
-    trace: 'on-first-retry',
+    trace: 'on-failure-retry',
     video: 'retain-on-failure',
+    screenshot: 'only-on-failure',
     headless: true,
   },
   timeout: 5000,  // 5 second max per test
