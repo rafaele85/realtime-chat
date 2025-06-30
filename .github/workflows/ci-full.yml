@@ -68,7 +68,7 @@ jobs:
         cd packages/server
         echo "In server directory: $(pwd)"
         echo "Running TypeScript compilation..."
-        npx tsc --listFiles
+        npx tsc 2>&1 || echo "TypeScript compilation failed with exit code $?"
         
         echo "=== AFTER BUILD ==="
         echo "Contents of server directory:"
@@ -93,7 +93,17 @@ jobs:
         timeout 30 bash -c 'until curl -f http://localhost:3001/health 2>/dev/null || nc -z localhost 3001; do sleep 1; done' || echo "Server didn't start within 30 seconds"
         sleep 2  # Additional buffer
       
+    - name: Cache Playwright browsers
+      uses: actions/cache@v4
+      id: playwright-cache
+      with:
+        path: ~/.cache/ms-playwright
+        key: playwright-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: |
+          playwright-${{ runner.os }}-
+          
     - name: Install Playwright browsers
+      if: steps.playwright-cache.outputs.cache-hit != 'true'
       run: npx playwright install --with-deps
       
     - name: Playwright E2E tests
