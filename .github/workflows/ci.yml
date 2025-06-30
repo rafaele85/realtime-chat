@@ -41,19 +41,17 @@ jobs:
     needs: test
     if: always()
     steps:
-    - name: Notify on success
+    - name: Notify Slack on success
       if: needs.test.result == 'success'
       run: |
-        echo "✅ CI Pipeline completed successfully!"
-        echo "Branch: ${{ github.ref_name }}"
-        echo "Commit: ${{ github.sha }}"
-        echo "Author: ${{ github.actor }}"
+        curl -X POST -H 'Content-type: application/json' \
+        --data '{"text":"✅ *CI Pipeline Success*\n• Branch: `${{ github.ref_name }}`\n• Commit: `${{ github.sha }}`\n• Author: ${{ github.actor }}\n• <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Run>"}' \
+        ${{ secrets.SLACK_WEBHOOK_URL }}
         
-    - name: Notify on failure
+    - name: Notify Slack on failure
       if: needs.test.result == 'failure'
       run: |
-        echo "❌ CI Pipeline failed!"
-        echo "Branch: ${{ github.ref_name }}"
-        echo "Commit: ${{ github.sha }}"
-        echo "Author: ${{ github.actor }}"
+        curl -X POST -H 'Content-type: application/json' \
+        --data '{"text":"❌ *CI Pipeline Failed*\n• Branch: `${{ github.ref_name }}`\n• Commit: `${{ github.sha }}`\n• Author: ${{ github.actor }}\n• <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Run>"}' \
+        ${{ secrets.SLACK_WEBHOOK_URL }}
         exit 1
