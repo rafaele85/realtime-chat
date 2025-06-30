@@ -63,6 +63,8 @@ jobs:
       working-directory: packages/client
       run: |
         npm install -g vercel
+        mkdir -p .vercel
+        echo '{"orgId":"${{ secrets.VERCEL_ORG_ID }}","projectId":"${{ secrets.VERCEL_PROJECT_ID }}"}' > .vercel/project.json
         vercel --token ${{ secrets.VERCEL_TOKEN }} --prod --yes
 
   notify:
@@ -70,22 +72,30 @@ jobs:
     needs: [test, deploy]
     if: always()
     steps:
-    - name: Notify Slack on success
-      if: needs.test.result == 'success' && (needs.deploy.result == 'success' || needs.deploy.result == 'skipped')
+    - name: Notify Slack on deployment success
+      if: needs.test.result == 'success' && needs.deploy.result == 'success'
       run: |
-        if [ "${{ needs.deploy.result }}" = "success" ]; then
-          DEPLOY_STATUS="🚀 *Deployed to Production*"
-        else
-          DEPLOY_STATUS="✅ *CI Pipeline Success*"
-        fi
         curl -X POST -H 'Content-type: application/json' \
-        --data "{\"text\":\"$DEPLOY_STATUS\n• Branch: \`${{ github.ref_name }}\`\n• Commit: \`${{ github.sha }}\`\n• Author: ${{ github.actor }}\n• <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Run>\"}" \
+        --data '{"text":"🚀 *Deployed to Production*\n• Branch: `${{ github.ref_name }}`\n• Commit: `${{ github.sha }}`\n• Author: ${{ github.actor }}\n• <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Run>"}' \
         ${{ secrets.SLACK_WEBHOOK_URL }}
         
-    - name: Notify Slack on failure
+    - name: Notify Slack on test success only
+      if: needs.test.result == 'success' && needs.deploy.result == 'skipped'
+      run: |
+        curl -X POST -H 'Content-type: application/json' \
+        --data '{"text":"✅ *CI Pipeline Success*\n• Branch: `${{ github.ref_name }}`\n• Commit: `${{ github.sha }}`\n• Author: ${{ github.actor }}\n• <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Run>"}' \
+        ${{ secrets.SLACK_WEBHOOK_URL }}
+        
+    - name: Notify Slack on deployment failure
+      if: needs.test.result == 'success' && needs.deploy.result == 'failure'
+      run: |
+        curl -X POST -H 'Content-type: application/json' \
+        --data '{"text":"❌ *Deployment Failed*\n• Branch: `${{ github.ref_name }}`\n• Commit: `${{ github.sha }}`\n• Author: ${{ github.actor }}\n• Tests passed but deployment failed\n• <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Run>"}' \
+        ${{ secrets.SLACK_WEBHOOK_URL }}
+        
+    - name: Notify Slack on test failure
       if: needs.test.result == 'failure'
       run: |
         curl -X POST -H 'Content-type: application/json' \
         --data '{"text":"❌ *CI Pipeline Failed*\n• Branch: `${{ github.ref_name }}`\n• Commit: `${{ github.sha }}`\n• Author: ${{ github.actor }}\n• <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Run>"}' \
         ${{ secrets.SLACK_WEBHOOK_URL }}
-        exit 1
