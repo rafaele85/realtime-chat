@@ -1,4 +1,5 @@
 import { Message } from 'shared';
+import { formatTime } from '../utils/timeUtils';
 import styles from './MessageListItem.module.css';
 
 type MessageListItemProps = {
@@ -8,14 +9,6 @@ type MessageListItemProps = {
 };
 
 export const MessageListItem = ({ message, isCurrentUser, isLatest }: MessageListItemProps) => {
-  const formatTime = (timestamp: number) => {
-    return new Date(timestamp).toLocaleTimeString('en-US', {
-      hour12: false,
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-    });
-  };
 
   return (
     <div 

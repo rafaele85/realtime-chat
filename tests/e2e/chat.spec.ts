@@ -150,8 +150,8 @@ test.describe('Chat Application', () => {
     const messageWithContent = page.getByTestId('message-item').filter({ hasText: uniqueContent });
     await expect(messageWithContent).toHaveCount(1);
     
-    // Check exact content in the content span (second span element)
-    const messageContent = messageWithContent.locator('span').nth(1);
+    // Check exact content in the message content div
+    const messageContent = messageWithContent.locator('div').last();
     await expect(messageContent).toHaveText(uniqueContent);
   });
 
