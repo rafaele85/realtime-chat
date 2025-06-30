@@ -64,17 +64,32 @@ jobs:
         echo "Server source files:"
         find packages/server/src -name "*.ts" | head -10
         
+        echo "=== CHECKING SHARED PACKAGE ==="
+        echo "Shared package contents:"
+        ls -la packages/shared/ || echo "No shared directory"
+        ls -la packages/shared/dist/ || echo "No shared/dist directory"  
+        echo "node_modules shared link:"
+        ls -la packages/server/node_modules/shared || echo "No shared symlink in node_modules"
+        
         echo "=== BUILDING SERVER ==="
         cd packages/server
         echo "In server directory: $(pwd)"
-        echo "Running TypeScript compilation..."
-        npx tsc 2>&1 || echo "TypeScript compilation failed with exit code $?"
+        echo "Running TypeScript compilation with explicit error checking..."
+        if npx tsc; then
+          echo "✅ TypeScript compilation succeeded"
+        else
+          echo "❌ TypeScript compilation failed with exit code $?"
+        fi
         
         echo "=== AFTER BUILD ==="
         echo "Contents of server directory:"
         ls -la
         echo "Contents of dist directory:"
         ls -la dist/ || echo "No dist directory"
+        echo "Contents of dist/src directory:"
+        ls -la dist/src/ || echo "No dist/src directory"
+        echo "Looking for any .js files in dist:"
+        find dist -name "*.js" -type f || echo "No .js files found in dist"
         
         cd ../..
         echo "Back to root: $(pwd)"
