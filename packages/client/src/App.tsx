@@ -14,6 +14,12 @@ export const App = () => {
     const socket = socketService.connect();
     
     socket.on('message', (message: Message) => {
+      console.log('📨 Received message event:', message);
+      setMessages(prev => [...prev, message]);
+    });
+
+    socket.on('message:receive', (message: Message) => {
+      console.log('📨 Received message:receive event:', message);
       setMessages(prev => [...prev, message]);
     });
 
@@ -24,6 +30,10 @@ export const App = () => {
 
   const handleUsernameSubmit = (newUsername: string) => {
     setUsername(newUsername);
+  };
+
+  const handleSendMessage = (username: string, content: string) => {
+    socketService.sendMessage(username, content);
   };
 
   return (
@@ -42,7 +52,7 @@ export const App = () => {
       
       {username.length > 0 && (
         <div className={styles.input}>
-          <MessageInput username={username} />
+          <MessageInput username={username} onSendMessage={handleSendMessage} />
         </div>
       )}
     </div>

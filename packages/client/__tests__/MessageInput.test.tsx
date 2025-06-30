@@ -2,28 +2,23 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MessageInput } from '../src/components/MessageInput';
 
-// Mock console.log to avoid output during tests
-const mockConsoleLog = jest.spyOn(console, 'log').mockImplementation();
-
 describe('MessageInput', () => {
-  beforeEach(() => {
-    mockConsoleLog.mockClear();
-  });
+  const mockOnSendMessage = jest.fn();
 
-  afterAll(() => {
-    mockConsoleLog.mockRestore();
+  beforeEach(() => {
+    mockOnSendMessage.mockClear();
   });
 
   it('should render message input form', () => {
-    render(<MessageInput username="testuser" />);
+    render(<MessageInput username="testuser" onSendMessage={mockOnSendMessage} />);
     
     expect(screen.getByPlaceholderText('Type your message...')).toBeInTheDocument();
     expect(screen.getByText('Send')).toBeInTheDocument();
   });
 
-  it('should clear input after sending message', async () => {
+  it('should call onSendMessage and clear input after sending message', async () => {
     const user = userEvent.setup();
-    render(<MessageInput username="testuser" />);
+    render(<MessageInput username="testuser" onSendMessage={mockOnSendMessage} />);
     
     const input = screen.getByPlaceholderText('Type your message...');
     const button = screen.getByText('Send');
@@ -32,25 +27,22 @@ describe('MessageInput', () => {
     await user.click(button);
     
     expect(input).toHaveValue('');
-    expect(mockConsoleLog).toHaveBeenCalledWith('Sending message:', {
-      username: 'testuser',
-      content: 'Hello world',
-    });
+    expect(mockOnSendMessage).toHaveBeenCalledWith('testuser', 'Hello world');
   });
 
-  it('should not send empty message', async () => {
+  it('should not call onSendMessage for empty message', async () => {
     const user = userEvent.setup();
-    render(<MessageInput username="testuser" />);
+    render(<MessageInput username="testuser" onSendMessage={mockOnSendMessage} />);
     
     const button = screen.getByText('Send');
     await user.click(button);
     
-    expect(mockConsoleLog).not.toHaveBeenCalled();
+    expect(mockOnSendMessage).not.toHaveBeenCalled();
   });
 
-  it('should trim whitespace from message', async () => {
+  it('should trim whitespace from message before sending', async () => {
     const user = userEvent.setup();
-    render(<MessageInput username="testuser" />);
+    render(<MessageInput username="testuser" onSendMessage={mockOnSendMessage} />);
     
     const input = screen.getByPlaceholderText('Type your message...');
     const button = screen.getByText('Send');
@@ -58,9 +50,20 @@ describe('MessageInput', () => {
     await user.type(input, '  Hello world  ');
     await user.click(button);
     
-    expect(mockConsoleLog).toHaveBeenCalledWith('Sending message:', {
-      username: 'testuser',
-      content: 'Hello world',
-    });
+    expect(mockOnSendMessage).toHaveBeenCalledWith('testuser', 'Hello world');
+  });
+
+  it('should not call onSendMessage for whitespace-only message', async () => {
+    const user = userEvent.setup();
+    render(<MessageInput username="testuser" onSendMessage={mockOnSendMessage} />);
+    
+    const input = screen.getByPlaceholderText('Type your message...');
+    const button = screen.getByText('Send');
+    
+    await user.type(input, '   ');
+    await user.click(button);
+    
+    expect(mockOnSendMessage).not.toHaveBeenCalled();
+    expect(input).toHaveValue('');
   });
 });

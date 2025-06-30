@@ -30,8 +30,12 @@ export const disconnect = () => {
 };
 
 export const sendMessage = (username: string, content: string) => {
+  console.log('🚀 Sending message:', { username, content });
   if (socket?.connected) {
+    console.log('✅ Socket connected, emitting message:send');
     socket.emit('message:send', { username, content });
+  } else {
+    console.log('❌ Socket not connected!');
   }
 };
 

@@ -6,7 +6,9 @@ export const setupSocketHandlers = (io: Server) => {
     console.log('User connected:', socket.id);
 
     socket.on('message:send', async (data: { username: string; content: string }) => {
+      console.log('📨 Received message:send from', socket.id, 'data:', data);
       const message = await messageService.createMessage(data.username, data.content);
+      console.log('🚀 Broadcasting message:receive:', message);
       io.emit('message:receive', message);
     });
 

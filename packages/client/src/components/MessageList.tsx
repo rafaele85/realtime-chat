@@ -6,6 +6,7 @@ type MessageListProps = {
 };
 
 export const MessageList = ({ messages }: MessageListProps) => {
+  console.log('📋 MessageList rendered with messages:', messages);
   if (messages.length === 0) {
     return (
       <div className={styles.container}>

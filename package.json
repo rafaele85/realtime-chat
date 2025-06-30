@@ -8,6 +8,9 @@
   "scripts": {
     "dev:client": "npm run dev --workspace=client",
     "dev:server": "npm run dev --workspace=server",
+    "dev:start-background": "npm run dev:server > server.log 2>&1 & npm run dev:client > client.log 2>&1 & echo 'Starting services in background...'",
+    "dev:check-background": "sleep 3 && echo 'Checking services...' && ss -tulpn | grep -E ':(3000|3001)' && echo '--- Server Log ---' && tail -10 server.log && echo '--- Client Log ---' && tail -10 client.log",
+    "stop:background": "echo 'Stopping background services...' && pkill -f 'npm run dev' && pkill -f 'vite' && pkill -f 'nodemon' && echo 'Services stopped'",
     "build:client": "npm run build --workspace=client",
     "build:server": "npm run build --workspace=server",
     "typecheck": "npm run typecheck --workspace=shared && npm run typecheck --workspace=client && npm run typecheck --workspace=server",

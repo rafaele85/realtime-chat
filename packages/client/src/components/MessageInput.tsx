@@ -3,19 +3,19 @@ import styles from './MessageInput.module.scss';
 
 type MessageInputProps = {
   username: string;
+  onSendMessage: (username: string, content: string) => void;
 };
 
-export const MessageInput = ({ username }: MessageInputProps) => {
+export const MessageInput = ({ username, onSendMessage }: MessageInputProps) => {
   const [message, setMessage] = useState('');
 
   const handleSubmit = useCallback((e: FormEvent) => {
     e.preventDefault();
     if (message.trim()) {
-      // TODO: Send message via socket
-      console.log('Sending message:', { username, content: message.trim() });
-      setMessage('');
+      onSendMessage(username, message.trim());
     }
-  }, [message, username]);
+    setMessage('');
+  }, [message, username, onSendMessage]);
 
   const handleInputChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
     setMessage(e.target.value);
