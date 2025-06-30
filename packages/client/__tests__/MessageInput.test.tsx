@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MessageInput } from '../src/components/MessageInput';
 
@@ -23,8 +23,13 @@ describe('MessageInput', () => {
     const input = screen.getByPlaceholderText('Type your message...');
     const button = screen.getByText('Send');
     
-    await user.type(input, 'Hello world');
-    await user.click(button);
+    await act(async () => {
+      await user.type(input, 'Hello world');
+    });
+    
+    await act(async () => {
+      await user.click(button);
+    });
     
     expect(input).toHaveValue('');
     expect(mockOnSendMessage).toHaveBeenCalledWith('testuser', 'Hello world');
@@ -35,7 +40,10 @@ describe('MessageInput', () => {
     render(<MessageInput username="testuser" onSendMessage={mockOnSendMessage} />);
     
     const button = screen.getByText('Send');
-    await user.click(button);
+    
+    await act(async () => {
+      await user.click(button);
+    });
     
     expect(mockOnSendMessage).not.toHaveBeenCalled();
   });
@@ -47,8 +55,13 @@ describe('MessageInput', () => {
     const input = screen.getByPlaceholderText('Type your message...');
     const button = screen.getByText('Send');
     
-    await user.type(input, '  Hello world  ');
-    await user.click(button);
+    await act(async () => {
+      await user.type(input, '  Hello world  ');
+    });
+    
+    await act(async () => {
+      await user.click(button);
+    });
     
     expect(mockOnSendMessage).toHaveBeenCalledWith('testuser', 'Hello world');
   });
@@ -60,8 +73,13 @@ describe('MessageInput', () => {
     const input = screen.getByPlaceholderText('Type your message...');
     const button = screen.getByText('Send');
     
-    await user.type(input, '   ');
-    await user.click(button);
+    await act(async () => {
+      await user.type(input, '   ');
+    });
+    
+    await act(async () => {
+      await user.click(button);
+    });
     
     expect(mockOnSendMessage).not.toHaveBeenCalled();
     expect(input).toHaveValue('');

@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { App } from '../src/App';
 import * as socketService from '../src/services/socketService';
@@ -44,8 +44,13 @@ describe('App socket integration', () => {
     render(<App />);
     
     // Set username first
-    await user.type(screen.getByPlaceholderText('Enter your username'), 'testuser');
-    await user.click(screen.getByText('Join Chat'));
+    await act(async () => {
+      await user.type(screen.getByPlaceholderText('Enter your username'), 'testuser');
+    });
+    
+    await act(async () => {
+      await user.click(screen.getByText('Join Chat'));
+    });
     
     // Get the message handler function passed to socket.on
     const messageHandler = mockSocket.on.mock.calls.find(call => call[0] === 'message')[1];
@@ -58,7 +63,9 @@ describe('App socket integration', () => {
       timestamp: Date.now(),
     };
     
-    messageHandler(testMessage);
+    act(() => {
+      messageHandler(testMessage);
+    });
 
     await waitFor(() => {
       expect(screen.getByText('otheruser')).toBeInTheDocument();
@@ -71,24 +78,31 @@ describe('App socket integration', () => {
     render(<App />);
     
     // Set username first
-    await user.type(screen.getByPlaceholderText('Enter your username'), 'testuser');
-    await user.click(screen.getByText('Join Chat'));
+    await act(async () => {
+      await user.type(screen.getByPlaceholderText('Enter your username'), 'testuser');
+    });
+    
+    await act(async () => {
+      await user.click(screen.getByText('Join Chat'));
+    });
     
     const messageHandler = mockSocket.on.mock.calls.find(call => call[0] === 'message')[1];
     
     // Simulate receiving multiple messages
-    messageHandler({
-      id: '1',
-      username: 'user1',
-      content: 'First message',
-      timestamp: Date.now(),
-    });
-    
-    messageHandler({
-      id: '2',
-      username: 'user2',
-      content: 'Second message',
-      timestamp: Date.now() + 1000,
+    act(() => {
+      messageHandler({
+        id: '1',
+        username: 'user1',
+        content: 'First message',
+        timestamp: Date.now(),
+      });
+      
+      messageHandler({
+        id: '2',
+        username: 'user2',
+        content: 'Second message',
+        timestamp: Date.now() + 1000,
+      });
     });
 
     await waitFor(() => {

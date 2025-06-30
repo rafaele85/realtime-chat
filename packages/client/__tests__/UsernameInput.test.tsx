@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { UsernameInput } from '../src/components/UsernameInput';
 
@@ -48,8 +48,13 @@ describe('UsernameInput', () => {
     const input = screen.getByPlaceholderText('Enter your username');
     const button = screen.getByText('Join Chat');
     
-    await user.type(input, '  testuser  ');
-    await user.click(button);
+    await act(async () => {
+      await user.type(input, '  testuser  ');
+    });
+    
+    await act(async () => {
+      await user.click(button);
+    });
     
     expect(mockOnUsernameSubmit).toHaveBeenCalledWith('testuser');
   });
@@ -65,7 +70,10 @@ describe('UsernameInput', () => {
     );
     
     const button = screen.getByText('Join Chat');
-    await user.click(button);
+    
+    await act(async () => {
+      await user.click(button);
+    });
     
     expect(mockOnUsernameSubmit).not.toHaveBeenCalled();
   });

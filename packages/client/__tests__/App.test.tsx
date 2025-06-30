@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { App } from '../src/App';
 import * as socketService from '../src/services/socketService';
@@ -38,8 +38,13 @@ describe('App', () => {
     const usernameInput = screen.getByPlaceholderText('Enter your username');
     const joinButton = screen.getByText('Join Chat');
     
-    await user.type(usernameInput, 'testuser');
-    await user.click(joinButton);
+    await act(async () => {
+      await user.type(usernameInput, 'testuser');
+    });
+    
+    await act(async () => {
+      await user.click(joinButton);
+    });
     
     expect(screen.getByText('Username: testuser')).toBeInTheDocument();
     expect(screen.getByPlaceholderText('Type your message...')).toBeInTheDocument();
