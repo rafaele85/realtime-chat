@@ -29,6 +29,7 @@ export const MessageInput = ({ username, onSendMessage }: MessageInputProps) => 
         onChange={handleInputChange}
         placeholder="Type your message..."
         className={styles.input}
+        autoFocus
       />
       <button type="submit" className={styles.button}>
         Send
