@@ -99,7 +99,7 @@ jobs:
           npm run start --workspace=server &
         else
           echo "❌ server.js not found, cannot start server"
-          echo "SERVER_BUILD_FAILED=true" >> $GITHUB_ENV
+          exit 1
         fi
       
     - name: Wait for server to start
@@ -112,10 +112,12 @@ jobs:
       uses: actions/cache@v4
       id: playwright-cache
       with:
-        path: ~/.cache/ms-playwright
-        key: playwright-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+        path: |
+          ~/.cache/ms-playwright
+          /home/runner/.cache/ms-playwright
+        key: playwright-browsers-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
         restore-keys: |
-          playwright-${{ runner.os }}-
+          playwright-browsers-${{ runner.os }}-
           
     - name: Install Playwright browsers
       if: steps.playwright-cache.outputs.cache-hit != 'true'
