@@ -9,18 +9,22 @@
 - [x] **Test quality**: Fixed React act() warnings and comprehensive test coverage
 - [x] **TypeScript strict mode**: Enhanced with additional compiler options for better type safety
 - [x] **E2E test coverage**: Comprehensive test suite with 13 focused test files covering all user workflows
-- [x] **Platform architecture decisions**: Evaluated deployment platforms and selected Vercel + Supabase stack
+- [x] **Platform architecture decisions**: Evaluated deployment platforms and selected Vercel + GCP stack
+- [x] **Production deployment**: Deployed client to Vercel and server to GCP with HTTPS/WSS
+- [x] **CI/CD pipeline**: Automated deployments via GitHub Actions for both client and server
+- [x] **Environment configurations**: Separate configs for local, CI, and production environments
 
 ## 🏆 High Priority - Foundation & Core Features
 
 ### CI/CD & Development Infrastructure
-- [ ] **Basic CI pipeline**: GitHub Actions with quality gates (typecheck, lint, tests, build)
+- [x] **Basic CI pipeline**: GitHub Actions with quality gates (typecheck, lint, tests, build)
+- [x] **Deployment pipeline (CD)**: Production environments with Vercel + GCP
+- [ ] **Pull-based deployment**: Implement webhook-triggered deployments (see detailed plan below)
 - [ ] **Branch protection rules**: Require CI checks to pass before merge
 - [ ] **Slack and Discord notifications**: Build status and deployment alerts
 - [ ] **Code coverage reporting**: Metrics and trend analysis
 - [ ] **PR automation**: Auto-labeling, comments, reviewer assignment
 - [ ] **Visual regression testing**: Percy/Chromatic integration for UI consistency
-- [ ] **Deployment pipeline (CD)**: Staging/production environments with Vercel + Supabase
 - [ ] **Containerization**: Docker setup for consistent environments
 - [ ] **Monitoring & observability**: Application health and performance tracking
 
@@ -117,5 +121,53 @@ Based on current foundation and user impact:
 3. **Implement Auto-reconnection** - Critical for production reliability
 4. **User Presence Status** - Shows who's actively using the chat
 
+## 📋 Pull-Based Deployment Implementation Plan
+
+### Overview
+Replace SSH-based deployment with a more secure pull-based approach where the server pulls updates when triggered by GitHub webhooks.
+
+### Implementation Steps:
+
+1. **Create deployment script on server** (`/home/rambo/deploy.sh`)
+   - Pull latest code from GitHub
+   - Install dependencies
+   - Build the application
+   - Restart PM2 process
+
+2. **Set up GitHub webhook endpoint**
+   - Create `/webhook/deploy` endpoint on server
+   - Validate GitHub webhook signatures
+   - Trigger deployment script on valid push events
+
+3. **Create webhook listener service**
+   - Small Node.js service (or extend existing server)
+   - Listen for GitHub POST requests
+   - Validate webhook secret
+   - Execute deployment script
+
+4. **Secure the webhook**
+   - Use webhook secret for HMAC validation
+   - Only accept requests from GitHub IPs
+   - Add rate limiting to prevent abuse
+
+5. **Update CI/CD pipeline**
+   - Remove SSH deployment steps from `deploy.yml`
+   - Add webhook notification after successful tests
+   - Server handles deployment autonomously
+
+### Benefits:
+- ✅ No external SSH access required
+- ✅ Server controls deployment timing
+- ✅ Can add pre-deployment validation
+- ✅ Works with fully restricted firewall
+- ✅ More secure - no external access needed
+- ✅ Simpler than current SSH-based approach
+
+### Security Considerations:
+- Webhook endpoint must validate GitHub signatures
+- Use strong webhook secret
+- Log all deployment attempts
+- Consider adding deployment approval mechanism
+
 ---
-*Last updated: 2025-06-30*
+*Last updated: 2025-07-01*
