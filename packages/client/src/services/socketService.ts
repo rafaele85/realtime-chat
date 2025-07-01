@@ -7,7 +7,10 @@ export const connect = () => {
     return socket;
   }
 
-  socket = io('http://localhost:3001', {
+  const serverUrl = import.meta.env.VITE_SERVER_URL || 'http://localhost:3001';
+  console.log('Connecting to server at:', serverUrl);
+  
+  socket = io(serverUrl, {
     transports: ['websocket'],
   });
 
