@@ -19,27 +19,107 @@ Need to select deployment platforms for frontend, backend, and database that pro
 - Scalability for future growth
 
 ### Decision
-**Selected Stack: Vercel + Supabase**
+**Selected Stack: Vercel + Railway**
 - **Frontend:** Vercel
-- **Backend:** Supabase Edge Functions + Auto-generated APIs
-- **Database:** Supabase PostgreSQL
-- **Real-time:** Supabase real-time subscriptions
+- **Backend:** Railway (Node.js + Socket.IO + Fastify)
+- **Database:** Railway PostgreSQL
+- **Real-time:** Socket.IO WebSockets
+
+### Rationale for Backend Choice
+
+**Why Railway instead of Supabase Edge Functions:**
+
+**Technical Compatibility:**
+- Our existing Socket.IO server requires persistent WebSocket connections
+- Supabase Edge Functions are stateless and short-lived (incompatible with Socket.IO)
+- Converting to Supabase real-time would require complete rewrite of real-time logic
+
+**Development Consistency:**
+- Same codebase runs locally, in CI/CD, and production
+- No need to maintain separate implementations
+- Faster development and easier debugging
+
+**Single-Vendor Architecture:**
+- Database and backend in same datacenter (low latency)
+- No cross-vendor network connections or security complexity
+- Simpler deployment, monitoring, and billing
+- Better utilization of Railway's $5/month free credit
 
 ### Alternatives Considered
 
-#### Platform Comparison Matrix
+#### Backend Hosting Platform Comparison
 
-| Platform | Frontend | Backend | Database | Complexity | Free Tier Quality | Real-time Support |
-|----------|----------|---------|----------|------------|-------------------|-------------------|
-| **Vercel + Supabase** | ✅ Excellent | ✅ Good | ✅ PostgreSQL | Low | ⭐⭐⭐⭐⭐ | ✅ Built-in |
-| **Vercel + Railway** | ✅ Excellent | ✅ Good | ✅ PostgreSQL | Low | ⭐⭐⭐⭐⭐ | ⚠️ Custom |
-| **AWS Free Tier** | ✅ Good | ✅ Excellent | ✅ RDS | High | ⭐⭐⭐ | ⚠️ Complex setup |
-| **Google Cloud** | ✅ Good | ✅ Good | ⚠️ Limited | High | ⭐⭐⭐ | ⚠️ Complex setup |
-| **Render (All-in-one)** | ✅ Good | ✅ Good | ✅ PostgreSQL | Low | ⭐⭐⭐⭐ | ⚠️ Custom |
+| Platform | Node.js Support | WebSocket Support | Free Tier Quality | Always-On | Database Included | Deployment |
+|----------|-----------------|-------------------|-------------------|-----------|-------------------|------------|
+| **Railway** ⭐ | ✅ Excellent | ✅ Native | ⭐⭐⭐⭐⭐ | ✅ Yes | ✅ PostgreSQL | Git-based |
+| **Render** | ✅ Excellent | ✅ Native | ⭐⭐⭐⭐ | ❌ Sleeps 15min | ✅ PostgreSQL | Git-based |
+| **Heroku** | ✅ Excellent | ✅ Native | ⭐⭐ | ❌ No free tier | ✅ Add-ons | Git-based |
+| **Vercel + Supabase** | ⚠️ Edge Functions | ❌ Incompatible | ⭐⭐⭐⭐⭐ | ✅ Yes | ✅ PostgreSQL | Git-based |
 
 #### Detailed Platform Analysis
 
-**1. AWS Free Tier**
+**1. Railway** ⭐ **SELECTED**
+- ✅ **Pros:**
+  - **Best free tier for Node.js**: $5/month credit covers most small-medium apps
+  - **Excellent WebSocket support**: Native Socket.IO compatibility, no configuration needed
+  - **Zero-config deployments**: Connect GitHub repo, auto-deploys on push
+  - **Included PostgreSQL**: Database included in free tier (1GB storage, 1GB RAM)
+  - **Always-on services**: No sleeping, maintains WebSocket connections
+  - **Environment variables**: Easy secret management and configuration
+  - **Real-time logs**: Built-in monitoring and debugging tools
+  - **Auto-scaling**: Handles traffic spikes automatically
+  - **Same datacenter**: Database and backend co-located for low latency
+
+- ❌ **Cons:**
+  - **Newer platform**: Less mature than Heroku (founded 2020)
+  - **Credit limit**: $5/month free tier limit (pay-as-you-go after)
+  - **Limited regions**: Fewer deployment regions than major cloud providers
+
+- 💰 **Pricing:**
+  - **Free tier**: $5/month usage credit (covers ~0.1 vCPU, 0.1GB RAM + database)
+  - **Pay-as-you-go**: $0.000463/GB-sec RAM, $0.000231/vCPU-sec
+  - **PostgreSQL**: Included in usage credit
+
+**2. Render**
+- ✅ **Pros:**
+  - **Good free tier**: 750 hours/month compute time
+  - **Native WebSocket support**: Works out of the box with Socket.IO
+  - **Auto-deploy from GitHub**: Simple Git-based deployment
+  - **Free SSL**: Automatic HTTPS certificates
+  - **PostgreSQL included**: Free database tier available
+
+- ❌ **Cons:**
+  - **Services sleep**: Free tier sleeps after 15 minutes of inactivity
+  - **Cold start delays**: 30+ seconds to wake up, breaks WebSocket connections
+  - **Limited compute**: 0.5 CPU, 512MB RAM on free tier
+  - **Poor for real-time**: Sleeping breaks persistent connections
+
+- 💰 **Pricing:**
+  - **Free tier**: 750 hours/month, but services sleep
+  - **Always-on**: $7/month minimum for persistent services
+
+**3. Heroku**
+- ✅ **Pros:**
+  - **Mature platform**: 15+ years, very stable and well-documented
+  - **Excellent add-on ecosystem**: Redis, monitoring, etc.
+  - **WebSocket support**: Works well with Socket.IO
+
+- ❌ **Cons:**
+  - **No free tier**: Removed November 2022
+  - **Expensive**: $7/month minimum for basic dyno
+  - **Services still sleep**: Even paid dynos sleep without traffic
+
+**4. Vercel + Supabase (Original Plan)**
+- ✅ **Pros:**
+  - **Excellent for static sites**: Best-in-class frontend hosting
+  - **Great database features**: Supabase provides auth, APIs, real-time
+
+- ❌ **Cons:**
+  - **Edge Functions incompatible**: Can't run persistent WebSocket servers
+  - **Would require complete rewrite**: Converting Socket.IO to Supabase real-time
+  - **Cross-vendor complexity**: Managing services across multiple platforms
+
+**5. AWS Free Tier**
 - ✅ **Pros:**
   - Comprehensive services (S3, CloudFront, EC2, Lambda, RDS)
   - 750 hours/month EC2 t2.micro
@@ -52,7 +132,7 @@ Need to select deployment platforms for frontend, backend, and database that pro
   - 12-month time limit on free tier
   - Real-time features require additional services (API Gateway WebSocket)
 
-**2. Google Cloud Platform**
+**5. Google Cloud Platform**
 - ✅ **Pros:**
   - f1-micro Compute Engine instance always free
   - Cloud Functions with 2M invocations/month
@@ -64,75 +144,22 @@ Need to select deployment platforms for frontend, backend, and database that pro
   - Requires GCP expertise
   - Limited storage in free tier (1GB Firestore)
 
-**3. Railway**
-- ✅ **Pros:**
-  - All-in-one platform (frontend, backend, database)
-  - Simple deployment from GitHub
-  - Built-in PostgreSQL
-  - $5 monthly credit in free tier
-- ❌ **Cons:**
-  - Credit-based model may not be sustainable long-term
-  - Less mature than other platforms
-  - Custom real-time implementation required
-  - Limited to single platform vendor
-
-**4. Render**
-- ✅ **Pros:**
-  - Good free tier for static sites and web services
-  - Built-in PostgreSQL option
-  - Simple deployment process
-  - No time limits on free tier
-- ❌ **Cons:**
-  - Less generous free tier than competitors
-  - Slower cold starts on free tier
-  - Limited real-time capabilities
-  - Smaller ecosystem
-
-**5. Vercel + Supabase (Selected)**
-- ✅ **Pros:**
-  - **Vercel:** Best-in-class React deployment, automatic optimizations
-  - **Supabase:** PostgreSQL + real-time + auth + APIs in one platform
-  - Both have generous, permanent free tiers
-  - Real-time WebSocket support built-in
-  - Excellent developer experience
-  - Auto-generated REST and GraphQL APIs
-  - Built-in authentication system
-  - Row Level Security (RLS) for data protection
-- ⚠️ **Considerations:**
-  - Two separate platforms to manage
-  - Supabase is newer (but PostgreSQL is mature)
-  - Free tier limits: 500MB DB, 5GB bandwidth/month
-
-### Rationale
-
-**Why Vercel + Supabase:**
-
-1. **Developer Experience:** Both platforms prioritize DX with simple deployment and excellent documentation
-2. **Real-time First:** Supabase is built for real-time applications with WebSocket support out of the box
-3. **Cost Effective:** Both offer generous free tiers without time limits
-4. **Chat-Specific Benefits:**
-   - Real-time message synchronization
-   - Built-in user authentication
-   - PostgreSQL for reliable message storage
-   - Automatic API generation
-5. **Future-Proof:** Easy to scale and add features like file uploads, user profiles, etc.
-6. **Low Complexity:** Minimal DevOps overhead compared to AWS/GCP
-
 ### Implementation Plan
 
 **Phase 1: Basic Setup**
 - Deploy React client to Vercel
-- Setup Supabase project with PostgreSQL
-- Configure real-time message synchronization
+- Setup Railway project with Node.js + PostgreSQL
+- Configure GitHub integration for auto-deployment
 
-**Phase 2: Enhanced Features**
-- Implement Supabase Auth for user management
-- Add message persistence with proper schema
-- Setup Row Level Security policies
+**Phase 2: Database Integration**
+- Add PostgreSQL connection to server
+- Implement message persistence schema
+- Update real-time messaging to use database
 
 **Phase 3: Production Ready**
 - Custom domains and SSL
-- Performance monitoring
+- Performance monitoring and logging
+- CI/CD pipeline integration
 - Backup strategies
 
 ### Success Metrics
@@ -207,7 +234,7 @@ Need to select deployment platforms for frontend, backend, and database that pro
 - Health checks and readiness probes
 
 **3.3 Deployment Automation**
-- Deploy to Vercel (frontend) and Supabase (backend/database)
+- Deploy to Vercel (frontend) and Railway (backend/database)
 - Environment variable management
 - Rollback capabilities
 
@@ -262,10 +289,10 @@ Need to select deployment platforms for frontend, backend, and database that pro
 ---
 
 ## Future ADRs
-- ADR-003: Authentication Strategy (Supabase Auth vs Custom)
+- ADR-003: Authentication Strategy (Railway Auth vs Custom vs Third-party)
 - ADR-004: State Management (Context vs Redux vs Zustand)  
-- ADR-005: Real-time Architecture (WebSocket vs Server-Sent Events)
-- ADR-006: Database Schema Design
+- ADR-005: Database Schema Design for Message Persistence
+- ADR-006: Performance Optimization Strategies
 
 ---
 
