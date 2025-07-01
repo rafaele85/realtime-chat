@@ -21,7 +21,7 @@ jobs:
         echo "Tests passed, deployment can proceed"
         echo "should-deploy=true" >> $GITHUB_OUTPUT
 
-  deploy:
+  deploy-client:
     runs-on: ubuntu-latest
     needs: check-tests
     if: always() && (github.event_name == 'workflow_dispatch' || needs.check-tests.outputs.should-deploy == 'true')
@@ -52,29 +52,104 @@ jobs:
         echo '{"orgId":"${{ secrets.VERCEL_ORG_ID }}","projectId":"${{ secrets.VERCEL_PROJECT_ID }}"}' > .vercel/project.json
         npx vercel --token ${{ secrets.VERCEL_TOKEN }} --prod --yes
 
+  deploy-server:
+    runs-on: ubuntu-latest
+    needs: check-tests
+    if: always() && (github.event_name == 'workflow_dispatch' || needs.check-tests.outputs.should-deploy == 'true')
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Build server
+      run: |
+        npm run build --workspace=shared
+        npm run build --workspace=server
+    
+    - name: Setup Google Cloud SDK
+      uses: google-github-actions/setup-gcloud@v2
+      with:
+        version: 'latest'
+        
+    - name: Authenticate to Google Cloud
+      uses: google-github-actions/auth@v2
+      with:
+        credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
+        
+    - name: Deploy to GCP
+      env:
+        GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+      run: |
+        # Configure gcloud
+        gcloud config set project $GCP_PROJECT_ID
+        
+        # Create deployment directory
+        mkdir -p .deploy-temp
+        cp package*.json .deploy-temp/
+        cp -r packages/server .deploy-temp/server
+        cp -r packages/shared .deploy-temp/shared
+        
+        # Copy env file if needed
+        echo "GCP_PROJECT_ID=${{ secrets.GCP_PROJECT_ID }}" > .deploy-temp/.env
+        
+        # Transfer files to GCP instance
+        gcloud compute scp --recurse .deploy-temp/* chat-app-instance:/home/rambo/app/ --zone=us-central1-a
+        
+        # Run deployment commands on server
+        gcloud compute ssh chat-app-instance --zone=us-central1-a --command="
+          cd /home/rambo/app &&
+          npm install &&
+          cd server && npm install && cd .. &&
+          cd shared && npm install && cd .. &&
+          pm2 stop chat-server || true &&
+          pm2 start server/dist/src/server.js --name chat-server &&
+          pm2 save
+        "
+        
+        # Clean up
+        rm -rf .deploy-temp
+
   notify:
     runs-on: ubuntu-latest
-    needs: [check-tests, deploy]
+    needs: [check-tests, deploy-client, deploy-server]
     if: always()
     steps:
     - name: Notify Slack on deployment success
-      if: needs.deploy.result == 'success'
+      if: needs.deploy-client.result == 'success' && needs.deploy-server.result == 'success'
       run: |
         TRIGGER_TYPE="${{ github.event_name == 'workflow_dispatch' && 'Manual' || 'Auto' }}"
         curl -X POST -H 'Content-type: application/json' \
-        --data "{\"text\":\"🚀 *Deployed to Production* ($TRIGGER_TYPE)\n• Branch: \`${{ github.ref_name }}\`\n• Commit: \`${{ github.sha }}\`\n• Author: ${{ github.actor }}\n• <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Run>\"}" \
+        --data "{\"text\":\"🚀 *Deployed to Production* ($TRIGGER_TYPE)\n• Branch: \`${{ github.ref_name }}\`\n• Commit: \`${{ github.sha }}\`\n• Author: ${{ github.actor }}\n• Client: ✅ Deployed to Vercel\n• Server: ✅ Deployed to GCP\n• <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Run>\"}" \
         ${{ secrets.SLACK_WEBHOOK_URL }}
         
-    - name: Notify Slack on deployment failure
-      if: needs.deploy.result == 'failure'
+    - name: Notify Slack on partial deployment failure
+      if: (needs.deploy-client.result == 'failure' && needs.deploy-server.result == 'success') || (needs.deploy-client.result == 'success' && needs.deploy-server.result == 'failure')
+      run: |
+        TRIGGER_TYPE="${{ github.event_name == 'workflow_dispatch' && 'Manual' || 'Auto' }}"
+        CLIENT_STATUS="${{ needs.deploy-client.result == 'success' && '✅' || '❌' }}"
+        SERVER_STATUS="${{ needs.deploy-server.result == 'success' && '✅' || '❌' }}"
+        curl -X POST -H 'Content-type: application/json' \
+        --data "{\"text\":\"⚠️ *Partial Deployment Failure* ($TRIGGER_TYPE)\n• Branch: \`${{ github.ref_name }}\`\n• Commit: \`${{ github.sha }}\`\n• Author: ${{ github.actor }}\n• Client: $CLIENT_STATUS\n• Server: $SERVER_STATUS\n• <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Run>\"}" \
+        ${{ secrets.SLACK_WEBHOOK_URL }}
+        
+    - name: Notify Slack on complete deployment failure
+      if: needs.deploy-client.result == 'failure' && needs.deploy-server.result == 'failure'
       run: |
         TRIGGER_TYPE="${{ github.event_name == 'workflow_dispatch' && 'Manual' || 'Auto' }}"
         curl -X POST -H 'Content-type: application/json' \
-        --data "{\"text\":\"❌ *Deployment Failed* ($TRIGGER_TYPE)\n• Branch: \`${{ github.ref_name }}\`\n• Commit: \`${{ github.sha }}\`\n• Author: ${{ github.actor }}\n• <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Run>\"}" \
+        --data "{\"text\":\"❌ *Deployment Failed* ($TRIGGER_TYPE)\n• Branch: \`${{ github.ref_name }}\`\n• Commit: \`${{ github.sha }}\`\n• Author: ${{ github.actor }}\n• Client: ❌ Failed\n• Server: ❌ Failed\n• <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Run>\"}" \
         ${{ secrets.SLACK_WEBHOOK_URL }}
         
     - name: Notify Slack on deployment skipped
-      if: needs.deploy.result == 'skipped'
+      if: needs.deploy-client.result == 'skipped' || needs.deploy-server.result == 'skipped'
       run: |
         curl -X POST -H 'Content-type: application/json' \
         --data '{"text":"⏭️ *Deployment Skipped*\n• Tests may have failed\n• Check CI pipeline first\n• <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Run>"}' \
