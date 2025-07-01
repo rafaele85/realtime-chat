@@ -7,11 +7,11 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: 0,  // Never retry tests
   workers: process.env.CI ? 1 : undefined,
-  reporter: process.env.CI ? [['list']] : [['list'], ['html', { open: 'never' }]],
+  reporter: process.env.CI ? [['list'], ['html', { open: 'never' }]] : [['list'], ['html', { open: 'never' }]],
   use: {
     baseURL: 'http://localhost:3000',
     trace: 'retain-on-failure',
-    video: 'retain-on-failure',
+    video: process.env.CI ? 'on' : 'retain-on-failure',
     screenshot: 'only-on-failure',
     headless: true,
   },
