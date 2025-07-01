@@ -45,62 +45,11 @@ jobs:
     - name: Jest unit tests
       run: npm run test
       
-    - name: Check if server was already built
+    - name: Start server for E2E tests
       run: |
-        echo "Checking if server build from earlier step still exists:"
-        ls -la packages/server/ || echo "No server directory"
-        ls -la packages/server/dist/ || echo "No dist directory from earlier build"
-        
-    - name: Start server for E2E tests  
-      run: |
-        echo "=== DEBUGGING SERVER BUILD ==="
-        echo "Current working directory: $(pwd)"
-        echo "Server package.json exists:" 
-        cat packages/server/package.json | grep -A5 -B5 '"build"'
-        
-        echo "Server tsconfig.json:"
-        cat packages/server/tsconfig.json
-        
-        echo "Server source files:"
-        find packages/server/src -name "*.ts" | head -10
-        
-        echo "=== CHECKING SHARED PACKAGE ==="
-        echo "Shared package contents:"
-        ls -la packages/shared/ || echo "No shared directory"
-        ls -la packages/shared/dist/ || echo "No shared/dist directory"  
-        echo "node_modules shared link:"
-        ls -la packages/server/node_modules/shared || echo "No shared symlink in node_modules"
-        
-        echo "=== BUILDING SERVER ==="
-        cd packages/server
-        echo "In server directory: $(pwd)"
-        echo "Running TypeScript compilation with explicit error checking..."
-        if npx tsc; then
-          echo "✅ TypeScript compilation succeeded"
-        else
-          echo "❌ TypeScript compilation failed with exit code $?"
-        fi
-        
-        echo "=== AFTER BUILD ==="
-        echo "Contents of server directory:"
-        ls -la
-        echo "Contents of dist directory:"
-        ls -la dist/ || echo "No dist directory"
-        echo "Contents of dist/src directory:"
-        ls -la dist/src/ || echo "No dist/src directory"
-        echo "Looking for any .js files in dist:"
-        find dist -name "*.js" -type f || echo "No .js files found in dist"
-        
-        cd ../..
-        echo "Back to root: $(pwd)"
-        
-        if [ -f "packages/server/dist/server.js" ]; then
-          echo "✅ server.js found, starting server..."
-          npm run start --workspace=server &
-        else
-          echo "❌ server.js not found, cannot start server"
-          exit 1
-        fi
+        echo "Starting server for E2E tests..."
+        npm run start --workspace=server &
+        echo "Server started in background"
       
     - name: Wait for server to start
       run: |
@@ -147,7 +96,7 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     needs: test
-    if: github.event_name == 'push' && github.ref == 'refs/heads/master' && needs.test.result == 'success'
+    if: needs.test.result == 'success'
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
