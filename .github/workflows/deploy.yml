@@ -101,10 +101,10 @@ jobs:
         echo "GCP_PROJECT_ID=${{ secrets.GCP_PROJECT_ID }}" > .deploy-temp/.env
         
         # Transfer files to GCP instance
-        gcloud compute scp --recurse .deploy-temp/* chat-app-instance:/home/rambo/app/ --zone=us-central1-a
+        gcloud compute scp --recurse .deploy-temp/* chat-app-instance:/home/rambo/app/ --zone=us-central1-a --strict-host-key-checking=no
         
         # Run deployment commands on server
-        gcloud compute ssh chat-app-instance --zone=us-central1-a --command="
+        gcloud compute ssh chat-app-instance --zone=us-central1-a --strict-host-key-checking=no --command="
           cd /home/rambo/app &&
           npm install &&
           cd server && npm install && cd .. &&
