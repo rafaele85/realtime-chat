@@ -19,15 +19,23 @@ Need to select deployment platforms for frontend, backend, and database that pro
 - Scalability for future growth
 
 ### Decision
-**Selected Stack: Vercel + Railway**
+**Selected Stack: Vercel + GCP + Supabase**
 - **Frontend:** Vercel
-- **Backend:** Railway (Node.js + Socket.IO + Fastify)
-- **Database:** Railway PostgreSQL
+- **Backend:** GCP Compute Engine e2-micro (Node.js + Socket.IO + Fastify)
+- **Database:** Supabase PostgreSQL (free tier)
 - **Real-time:** Socket.IO WebSockets
 
 ### Rationale for Backend Choice
 
-**Why Railway instead of Supabase Edge Functions:**
+**Why Google Cloud Platform instead of Railway:**
+
+**Cost Effectiveness:**
+- Railway's $5 credit expires after 30 days, making it unsuitable for long-term projects
+- GCP provides generous always-free tier with e2-micro instances (1 vCPU shared, 1GB memory)
+- GCP free tier includes 30GB standard persistent disk and 5GB snapshot storage
+- No expiration on GCP's always-free tier resources
+
+**Why GCP instead of Supabase Edge Functions:**
 
 **Technical Compatibility:**
 - Our existing Socket.IO server requires persistent WebSocket connections
@@ -51,34 +59,36 @@ Need to select deployment platforms for frontend, backend, and database that pro
 
 | Platform | Node.js Support | WebSocket Support | Free Tier Quality | Always-On | Database Included | Deployment |
 |----------|-----------------|-------------------|-------------------|-----------|-------------------|------------|
-| **Railway** ⭐ | ✅ Excellent | ✅ Native | ⭐⭐⭐⭐⭐ | ✅ Yes | ✅ PostgreSQL | Git-based |
+| **Google Cloud Platform** ⭐ | ✅ Excellent | ✅ Native | ⭐⭐⭐⭐⭐ | ✅ Yes | ✅ Cloud SQL | VM/Container |
+| **Railway** | ✅ Excellent | ✅ Native | ⭐⭐⭐ | ✅ Yes | ✅ PostgreSQL | Git-based |
 | **Render** | ✅ Excellent | ✅ Native | ⭐⭐⭐⭐ | ❌ Sleeps 15min | ✅ PostgreSQL | Git-based |
 | **Heroku** | ✅ Excellent | ✅ Native | ⭐⭐ | ❌ No free tier | ✅ Add-ons | Git-based |
 | **Vercel + Supabase** | ⚠️ Edge Functions | ❌ Incompatible | ⭐⭐⭐⭐⭐ | ✅ Yes | ✅ PostgreSQL | Git-based |
 
 #### Detailed Platform Analysis
 
-**1. Railway** ⭐ **SELECTED**
+**1. Google Cloud Platform** ⭐ **SELECTED**
 - ✅ **Pros:**
-  - **Best free tier for Node.js**: $5/month credit covers most small-medium apps
-  - **Excellent WebSocket support**: Native Socket.IO compatibility, no configuration needed
-  - **Zero-config deployments**: Connect GitHub repo, auto-deploys on push
-  - **Included PostgreSQL**: Database included in free tier (1GB storage, 1GB RAM)
+  - **Permanent free tier**: e2-micro instance always free (no expiration)
+  - **Excellent WebSocket support**: Native Socket.IO compatibility on Compute Engine
+  - **Generous resources**: 1 shared vCPU, 1GB memory, 30GB persistent disk
+  - **Mature platform**: Enterprise-grade reliability and extensive documentation
   - **Always-on services**: No sleeping, maintains WebSocket connections
-  - **Environment variables**: Easy secret management and configuration
-  - **Real-time logs**: Built-in monitoring and debugging tools
-  - **Auto-scaling**: Handles traffic spikes automatically
-  - **Same datacenter**: Database and backend co-located for low latency
+  - **Advanced features**: Load balancing, auto-scaling, monitoring included
+  - **Global network**: Low latency worldwide with multiple regions
+  - **Hybrid approach**: Combine GCP compute with Supabase database for optimal cost/features
+  - **Best of both worlds**: Enterprise-grade compute with generous database free tier
 
 - ❌ **Cons:**
-  - **Newer platform**: Less mature than Heroku (founded 2020)
-  - **Credit limit**: $5/month free tier limit (pay-as-you-go after)
-  - **Limited regions**: Fewer deployment regions than major cloud providers
+  - **Learning curve**: More complex setup than simple PaaS solutions
+  - **Manual configuration**: Requires VM setup, networking, and security configuration
+  - **Database costs**: Cloud SQL not included in free tier (solved by using Supabase)
 
 - 💰 **Pricing:**
-  - **Free tier**: $5/month usage credit (covers ~0.1 vCPU, 0.1GB RAM + database)
-  - **Pay-as-you-go**: $0.000463/GB-sec RAM, $0.000231/vCPU-sec
-  - **PostgreSQL**: Included in usage credit
+  - **Free tier**: 1 e2-micro instance always free (744 hours/month)
+  - **Storage**: 30GB standard persistent disk always free
+  - **Networking**: 1GB outbound transfer/month always free
+  - **Database**: Supabase free tier (500MB, 50MB file uploads, 2GB bandwidth)
 
 **2. Render**
 - ✅ **Pros:**
@@ -148,11 +158,12 @@ Need to select deployment platforms for frontend, backend, and database that pro
 
 **Phase 1: Basic Setup**
 - Deploy React client to Vercel
-- Setup Railway project with Node.js + PostgreSQL
-- Configure GitHub integration for auto-deployment
+- Setup GCP Compute Engine e2-micro instance with Node.js
+- Setup Supabase project with PostgreSQL database
+- Configure CI/CD for auto-deployment
 
 **Phase 2: Database Integration**
-- Add PostgreSQL connection to server
+- Add Supabase PostgreSQL connection to server
 - Implement message persistence schema
 - Update real-time messaging to use database
 
@@ -234,8 +245,8 @@ Need to select deployment platforms for frontend, backend, and database that pro
 - Health checks and readiness probes
 
 **3.3 Deployment Automation**
-- Deploy to Vercel (frontend) and Railway (backend/database)
-- Environment variable management
+- Deploy to Vercel (frontend) and GCP Compute Engine (backend)
+- Environment variable management for Supabase connection
 - Rollback capabilities
 
 #### **Phase 4: Monitoring & Observability**
@@ -288,12 +299,252 @@ Need to select deployment platforms for frontend, backend, and database that pro
 
 ---
 
-## Future ADRs
-- ADR-003: Authentication Strategy (Railway Auth vs Custom vs Third-party)
-- ADR-004: State Management (Context vs Redux vs Zustand)  
-- ADR-005: Database Schema Design for Message Persistence
-- ADR-006: Performance Optimization Strategies
+---
+
+## ADR-003: GCP Migration Plan
+
+**Date:** 2025-07-01  
+**Status:** Planned  
+**Deciders:** Development Team  
+
+### Migration Overview
+Complete migration from Railway (planned but not implemented) to Google Cloud Platform with Supabase database.
+
+### Migration Steps
+
+#### **Phase 1: Infrastructure Setup (2-3 hours)**
+
+**1.1 GCP Project Setup**
+- Create new GCP project: `chat-app-production`
+- Enable required APIs:
+  - Compute Engine API
+  - Cloud Build API
+  - Cloud Run API (for future containerization)
+  - Cloud Storage API
+- Setup billing account (free tier usage)
+
+**1.2 Compute Engine Instance**
+- Create e2-micro instance (always free)
+- Region: us-central1-a (lowest latency)
+- OS: Ubuntu 22.04 LTS
+- Disk: 30GB standard persistent disk
+- Network: Allow HTTP/HTTPS traffic
+- Firewall: Custom port for Socket.IO (default 3001)
+
+**1.3 Supabase Database Setup**
+- Create new Supabase project
+- Configure PostgreSQL database
+- Setup environment variables for connection
+- Create initial database schema for messages
+
+#### **Phase 2: Server Configuration (2-4 hours)**
+
+**2.1 Server Environment Setup**
+```bash
+# SSH into GCP instance
+gcloud compute ssh chat-app-instance
+
+# Install Node.js 18 LTS
+curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+sudo apt-get install -y nodejs
+
+# Install PM2 for process management
+sudo npm install -g pm2
+
+# Install git and clone repository
+sudo apt-get update && sudo apt-get install -y git
+git clone https://github.com/your-repo/chat-app.git
+cd chat-app
+```
+
+**2.2 Application Deployment**
+```bash
+# Install dependencies
+npm install
+
+# Build the application
+npm run build
+
+# Setup environment variables
+cp .env.example .env
+# Configure SUPABASE_URL, SUPABASE_ANON_KEY, etc.
+
+# Start with PM2
+pm2 start server/dist/index.js --name chat-server
+pm2 startup
+pm2 save
+```
+
+**2.3 Reverse Proxy & SSL**
+```bash
+# Install Nginx
+sudo apt-get install -y nginx
+
+# Configure Nginx for reverse proxy
+sudo nano /etc/nginx/sites-available/chat-app
+
+# Setup SSL with Let's Encrypt
+sudo apt-get install -y certbot python3-certbot-nginx
+sudo certbot --nginx -d your-domain.com
+```
+
+#### **Phase 3: Database Migration (1-2 hours)**
+
+**3.1 Database Schema Creation**
+```sql
+-- Create messages table in Supabase
+CREATE TABLE messages (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    content TEXT NOT NULL,
+    user_id TEXT NOT NULL,
+    room_id TEXT NOT NULL DEFAULT 'general',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Create indexes for performance
+CREATE INDEX idx_messages_room_created ON messages(room_id, created_at DESC);
+CREATE INDEX idx_messages_user ON messages(user_id);
+```
+
+**3.2 Application Database Connection**
+```typescript
+// Update server database configuration
+import { createClient } from '@supabase/supabase-js'
+
+const supabaseUrl = process.env.SUPABASE_URL!
+const supabaseKey = process.env.SUPABASE_ANON_KEY!
+const supabase = createClient(supabaseUrl, supabaseKey)
+```
+
+#### **Phase 4: CI/CD Pipeline Update (1-2 hours)**
+
+**4.1 GitHub Actions Workflow**
+Create `.github/workflows/deploy-gcp.yml`:
+```yaml
+name: Deploy to GCP
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Build
+      run: npm run build
+    
+    - name: Deploy to GCP
+      run: |
+        # Setup gcloud CLI
+        # Copy files to GCP instance
+        # Restart PM2 processes
+```
+
+**4.2 Environment Variables**
+Configure GitHub secrets:
+- `GCP_PROJECT_ID`
+- `GCP_INSTANCE_NAME`
+- `GCP_ZONE`
+- `SUPABASE_URL`
+- `SUPABASE_ANON_KEY`
+- `SSH_PRIVATE_KEY`
+
+#### **Phase 5: Testing & Validation (1 hour)**
+
+**5.1 Functionality Testing**
+- [ ] WebSocket connections work correctly
+- [ ] Message persistence to Supabase
+- [ ] Real-time message broadcasting
+- [ ] Frontend-backend communication
+- [ ] SSL/HTTPS working properly
+
+**5.2 Performance Testing**
+- [ ] Load testing with multiple concurrent users
+- [ ] Database query performance
+- [ ] Memory usage monitoring
+- [ ] Response time measurements
+
+#### **Phase 6: DNS & Domain Setup (30 minutes)**
+
+**6.1 Domain Configuration**
+- Point domain to GCP instance external IP
+- Configure A record: `chat.yourdomain.com → GCP_EXTERNAL_IP`
+- Verify SSL certificate installation
+
+### Migration Checklist
+
+**Pre-Migration:**
+- [ ] Backup any existing data
+- [ ] Test Supabase connection locally
+- [ ] Verify GCP free tier limits
+
+**Migration:**
+- [ ] Create GCP project and enable APIs
+- [ ] Launch e2-micro Compute Engine instance
+- [ ] Install Node.js, PM2, Nginx
+- [ ] Clone repository and install dependencies
+- [ ] Configure environment variables
+- [ ] Setup Supabase database schema
+- [ ] Deploy application with PM2
+- [ ] Configure Nginx reverse proxy
+- [ ] Setup SSL with Let's Encrypt
+- [ ] Update GitHub Actions workflow
+- [ ] Test all functionality
+
+**Post-Migration:**
+- [ ] Monitor application performance
+- [ ] Setup monitoring and logging
+- [ ] Document new deployment process
+- [ ] Update team on new infrastructure
+
+### Cost Analysis
+
+**Monthly Costs:**
+- **GCP Compute Engine**: $0 (e2-micro always free)
+- **GCP Storage**: $0 (30GB always free)
+- **GCP Networking**: $0 (1GB egress always free)
+- **Supabase Database**: $0 (free tier: 500MB, 50MB uploads)
+- **Domain**: ~$12/year (optional)
+
+**Total: $0/month** (vs Railway $5/month for 30 days)
+
+### Rollback Plan
+
+If migration fails:
+1. Keep existing local development setup
+2. Revert DNS changes
+3. Use current Vercel frontend with localhost backend
+4. Document issues for future migration attempt
+
+### Success Metrics
+
+- [ ] Application running 24/7 without sleeping
+- [ ] WebSocket connections stable
+- [ ] Database queries under 100ms
+- [ ] Zero cost for first 6 months
+- [ ] Successful automated deployments
 
 ---
 
-*Last updated: 2025-06-30*
+## Future ADRs
+- ADR-004: Authentication Strategy (GCP vs Supabase Auth vs Custom)
+- ADR-005: State Management (Context vs Redux vs Zustand)  
+- ADR-006: Database Schema Design for Message Persistence
+- ADR-007: Performance Optimization Strategies
+
+---
+
+*Last updated: 2025-07-01*
